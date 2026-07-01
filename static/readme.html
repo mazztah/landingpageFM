@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>telllmeeedrei – Telegram AI Bot</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:        #0d0014;
+    --surface:   #160020;
+    --card:      #1e002e;
+    --border:    #3d005a;
+    --accent1:   #cc44ff;
+    --accent2:   #ff44cc;
+    --accent3:   #44ffcc;
+    --accent4:   #ffcc44;
+    --text:      #f0d6ff;
+    --muted:     #9966bb;
+    --code-bg:   #0a0012;
+    --mono:      'Space Mono', monospace;
+    --sans:      'Syne', sans-serif;
+    --radius:    14px;
+    --glow1:     0 0 30px rgba(204,68,255,0.35);
+    --glow2:     0 0 30px rgba(255,68,204,0.35);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 16px;
+    line-height: 1.7;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      repeating-linear-gradient(0deg, transparent, transparent 39px, rgba(204,68,255,0.03) 39px, rgba(204,68,255,0.03) 40px),
+      repeating-linear-gradient(90deg, transparent, transparent 39px, rgba(204,68,255,0.03) 39px, rgba(204,68,255,0.03) 40px);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .orb {
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(120px);
+    pointer-events: none;
+    z-index: 0;
+    opacity: .45;
+  }
+  .orb-a { width: 600px; height: 600px; background: #7700cc; top: -200px; right: -100px; animation: drift 18s ease-in-out infinite; }
+  .orb-b { width: 500px; height: 500px; background: #cc0077; bottom: 10%; left: -150px; animation: drift 22s ease-in-out infinite reverse; }
+  .orb-c { width: 300px; height: 300px; background: #00ccaa; top: 60%; right: 10%; animation: drift 14s ease-in-out infinite 4s; }
+  @keyframes drift { 0%,100%{transform:translate(0,0) scale(1);} 50%{transform:translate(40px,-30px) scale(1.08);} }
+
+  .wrapper { position: relative; z-index: 1; max-width: 960px; margin: 0 auto; padding: 0 24px; }
+
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 80px 24px 60px;
+    position: relative;
+  }
+
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(204,68,255,0.12);
+    border: 1px solid rgba(204,68,255,0.3);
+    border-radius: 999px;
+    padding: 6px 18px;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--accent1);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 32px;
+  }
+  .hero-badge::before { content: '●'; font-size: 8px; animation: blink 1.8s step-end infinite; }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+  .hero-title {
+    font-family: var(--sans);
+    font-weight: 800;
+    font-size: clamp(3rem, 8vw, 7rem);
+    line-height: 0.95;
+    letter-spacing: -0.03em;
+    background: linear-gradient(135deg, #fff 0%, var(--accent1) 40%, var(--accent2) 70%, var(--accent4) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 8px;
+  }
+
+  .hero-sub {
+    font-family: var(--mono);
+    font-size: clamp(0.75rem, 2vw, 1rem);
+    color: var(--muted);
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    margin-bottom: 28px;
+  }
+
+  .hero-desc {
+    max-width: 600px;
+    font-size: 1.15rem;
+    color: #c4a3e0;
+    margin-bottom: 48px;
+  }
+
+  .hero-cta {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 14px 28px;
+    border-radius: var(--radius);
+    font-family: var(--mono);
+    font-size: 14px;
+    font-weight: 700;
+    text-decoration: none;
+    transition: transform .15s, box-shadow .15s;
+    cursor: pointer;
+    border: none;
+  }
+  .btn:hover { transform: translateY(-2px); }
+  .btn-primary {
+    background: linear-gradient(135deg, var(--accent1), var(--accent2));
+    color: #fff;
+    box-shadow: var(--glow1);
+  }
+  .btn-primary:hover { box-shadow: 0 0 50px rgba(204,68,255,.6); }
+  .btn-outline {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text);
+  }
+  .btn-outline:hover { border-color: var(--accent1); color: var(--accent1); }
+
+  .stats {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 12px;
+    padding: 40px 24px;
+    max-width: 960px;
+    margin: 0 auto;
+  }
+  .stat-pill {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 10px 22px;
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .stat-pill strong { color: var(--accent1); }
+
+  section { padding: 80px 0; }
+
+  .section-label {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--accent1);
+    margin-bottom: 16px;
+  }
+
+  h2 {
+    font-family: var(--sans);
+    font-weight: 800;
+    font-size: clamp(1.8rem, 4vw, 2.8rem);
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    margin-bottom: 16px;
+    color: #fff;
+  }
+
+  .section-intro {
+    color: var(--muted);
+    max-width: 560px;
+    margin-bottom: 56px;
+    font-size: 1.05rem;
+  }
+
+  .feat-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+  }
+
+  .feat-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px;
+    position: relative;
+    overflow: hidden;
+    transition: transform .2s, border-color .2s, box-shadow .2s;
+  }
+  .feat-card:hover {
+    transform: translateY(-4px);
+    border-color: var(--accent1);
+    box-shadow: var(--glow1);
+  }
+  .feat-card::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(204,68,255,.06), transparent);
+    pointer-events: none;
+  }
+
+  .feat-icon {
+    font-size: 2rem;
+    margin-bottom: 16px;
+    display: block;
+  }
+
+  .feat-title {
+    font-family: var(--sans);
+    font-weight: 700;
+    font-size: 1.05rem;
+    color: #fff;
+    margin-bottom: 8px;
+  }
+
+  .feat-desc {
+    font-size: 0.88rem;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+
+  .feat-tag {
+    display: inline-block;
+    margin-top: 14px;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    background: rgba(204,68,255,.12);
+    color: var(--accent1);
+    border: 1px solid rgba(204,68,255,.25);
+  }
+
+  .code-wrap {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    margin: 24px 0;
+  }
+
+  .code-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 16px;
+    background: rgba(255,255,255,.03);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .code-dots { display: flex; gap: 6px; }
+  .code-dot { width: 10px; height: 10px; border-radius: 50%; }
+  .code-dot:nth-child(1){ background:#ff5f57; }
+  .code-dot:nth-child(2){ background:#febc2e; }
+  .code-dot:nth-child(3){ background:#28c840; }
+
+  .code-lang {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  pre {
+    padding: 24px;
+    overflow-x: auto;
+    font-family: var(--mono);
+    font-size: 0.83rem;
+    line-height: 1.7;
+    color: #e2c8ff;
+  }
+
+  .kw  { color: #cc44ff; }
+  .fn  { color: #44ffcc; }
+  .st  { color: #ffcc44; }
+  .cm  { color: #664499; font-style: italic; }
+  .nu  { color: #ff44cc; }
+
+  .cmd-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.88rem;
+    margin: 24px 0;
+  }
+  .cmd-table th {
+    text-align: left;
+    padding: 12px 16px;
+    background: var(--card);
+    border-bottom: 1px solid var(--border);
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent1);
+  }
+  .cmd-table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid rgba(61,0,90,.5);
+    vertical-align: top;
+  }
+  .cmd-table tr:last-child td { border-bottom: none; }
+  .cmd-table tr:hover td { background: rgba(204,68,255,.05); }
+  code {
+    font-family: var(--mono);
+    background: rgba(204,68,255,.12);
+    color: var(--accent1);
+    padding: 2px 7px;
+    border-radius: 5px;
+    font-size: 0.85em;
+  }
+
+  .arch {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 40px 32px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .arch-row { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin: 12px 0; }
+  .arch-box {
+    background: rgba(204,68,255,.1);
+    border: 1px solid rgba(204,68,255,.3);
+    border-radius: 10px;
+    padding: 10px 18px;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--accent1);
+    white-space: nowrap;
+  }
+  .arch-box.green { background: rgba(68,255,204,.1); border-color: rgba(68,255,204,.3); color: var(--accent3); }
+  .arch-box.yellow { background: rgba(255,204,68,.1); border-color: rgba(255,204,68,.3); color: var(--accent4); }
+  .arch-box.pink { background: rgba(255,68,204,.1); border-color: rgba(255,68,204,.3); color: var(--accent2); }
+  .arch-arrow { text-align: center; color: var(--muted); font-size: 22px; line-height: 1; margin: 4px 0; }
+  .arch-label { font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.15em; color: var(--muted); margin-bottom: 8px; }
+
+  .audit-grid { display: grid; gap: 12px; }
+  .audit-item {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-left: 3px solid;
+    border-radius: var(--radius);
+    padding: 18px 22px;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 12px;
+    align-items: start;
+  }
+  .audit-item.ok   { border-left-color: #28c840; }
+  .audit-item.warn { border-left-color: #febc2e; }
+  .audit-item.crit { border-left-color: #ff5f57; }
+
+  .audit-icon { font-size: 1.2rem; padding-top: 2px; }
+  .audit-content h4 { font-size: 0.95rem; font-weight: 700; color: #fff; margin-bottom: 4px; }
+  .audit-content p { font-size: 0.83rem; color: var(--muted); }
+  .audit-badge {
+    font-family: var(--mono);
+    font-size: 10px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    white-space: nowrap;
+    align-self: center;
+  }
+  .audit-badge.ok   { background: rgba(40,200,64,.15);  color: #28c840; border: 1px solid rgba(40,200,64,.3); }
+  .audit-badge.warn { background: rgba(254,188,46,.15); color: #febc2e; border: 1px solid rgba(254,188,46,.3); }
+  .audit-badge.crit { background: rgba(255,95,87,.15);  color: #ff5f57; border: 1px solid rgba(255,95,87,.3); }
+
+  .env-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+  .env-table th { text-align:left; padding:10px 14px; color:var(--accent1); font-family:var(--mono); font-size:11px; text-transform:uppercase; letter-spacing:.1em; background:var(--card); border-bottom:1px solid var(--border); }
+  .env-table td { padding:10px 14px; border-bottom:1px solid rgba(61,0,90,.4); }
+  .env-table tr:last-child td { border:none; }
+  .req  { color: #ff5f57; }
+  .opt  { color: #febc2e; }
+
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 40px 24px;
+    text-align: center;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--muted);
+  }
+  footer strong { color: var(--accent1); }
+
+  .divider {
+    border: none;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--border), transparent);
+    margin: 0;
+  }
+
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 999px; }
+
+  @media (max-width: 600px) {
+    .feat-grid { grid-template-columns: 1fr; }
+    .hero-cta { flex-direction: column; align-items: center; }
+    .audit-item { grid-template-columns: auto 1fr; }
+    .audit-badge { grid-column: 2; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Ambient -->
+<div class="orb orb-a"></div>
+<div class="orb orb-b"></div>
+<div class="orb orb-c"></div>
+
+<!-- HERO -->
+<header class="hero">
+  <div class="hero-badge">Live · Google Cloud Run · Polling Mode</div>
+  <h1 class="hero-title">telllmeeedrei</h1>
+  <p class="hero-sub">Telegram AI Bot · Python · FastAPI · Groq · Claude</p>
+  <p class="hero-desc">
+    Ein vollständiger, modularer Telegram-Bot mit KI-Chat, Voice-Klonung, Bildgenerierung,
+    Musikerkennung, Videoerstellung, Brain-Speicher, E-Mail-Batches, YouTube-Analysen
+    und mehr – stabil deployed auf Google Cloud Run.
+  </p>
+  <div class="hero-cta">
+    <a href="#quickstart" class="btn btn-primary">⚡ Quickstart</a>
+    <a href="#commands"   class="btn btn-outline">📋 Alle Commands</a>
+    <a href="#audit"      class="btn btn-outline">🔍 Audit</a>
+  </div>
+</header>
+
+<!-- Stats -->
+<div class="stats">
+  <div class="stat-pill"><strong>40+</strong> Telegram-Commands</div>
+  <div class="stat-pill"><strong>30+</strong> Python-Module</div>
+  <div class="stat-pill"><strong>Groq</strong> LLM + Whisper</div>
+  <div class="stat-pill"><strong>Claude 3.5</strong> Code-Agent</div>
+  <div class="stat-pill"><strong>Supabase</strong> Brain-Storage</div>
+  <div class="stat-pill"><strong>FLUX.1</strong> Bildgenerierung</div>
+  <div class="stat-pill"><strong>Lyria 3 / Suno</strong> Musik</div>
+</div>
+
+<hr class="divider">
+
+<!-- ARCHITEKTUR -->
+<section id="architecture">
+  <div class="wrapper">
+    <p class="section-label">// Architektur</p>
+    <h2>Wie alles zusammenhängt</h2>
+    <p class="section-intro">Polling-Loop in FastAPI, modulare Handler, Supabase als Persistenz-Layer, externe KI-APIs.</p>
+
+    <div class="arch">
+      <div class="arch-label">Telegram Client</div>
+      <div class="arch-row">
+        <div class="arch-box">📱 User</div>
+      </div>
+      <div class="arch-arrow">↕</div>
+      <div class="arch-label">Polling Loop (main.py)</div>
+      <div class="arch-row">
+        <div class="arch-box">handlers_cmd.py</div>
+        <div class="arch-box">handlers_chat.py</div>
+        <div class="arch-box">handlers_media.py</div>
+      </div>
+      <div class="arch-arrow">↕</div>
+      <div class="arch-label">Core Layer</div>
+      <div class="arch-row">
+        <div class="arch-box green">bot_ai.py</div>
+        <div class="arch-box green">brain.py</div>
+        <div class="arch-box green">guard.py</div>
+        <div class="arch-box green">vectorbrain.py</div>
+      </div>
+      <div class="arch-arrow">↕</div>
+      <div class="arch-label">Externe APIs</div>
+      <div class="arch-row">
+        <div class="arch-box pink">Groq (LLM + Whisper + TTS)</div>
+        <div class="arch-box pink">Anthropic (Claude 3.5)</div>
+        <div class="arch-box pink">HuggingFace (FLUX / MusicGen)</div>
+        <div class="arch-box pink">DashScope (Video)</div>
+        <div class="arch-box pink">Google GenAI (Lyria 3)</div>
+        <div class="arch-box pink">Supabase (Brain DB)</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- FEATURES -->
+<section id="features">
+  <div class="wrapper">
+    <p class="section-label">// Features</p>
+    <h2>Was der Bot kann</h2>
+
+    <div class="feat-grid">
+
+      <div class="feat-card">
+        <span class="feat-icon">🧠</span>
+        <div class="feat-title">KI-Chat mit Persönlichkeit</div>
+        <div class="feat-desc">Groq LLaMA-4 Scout mit Fallback auf LLaMA-3.3-70B, Mixtral und Gemma2. Kontext-History + anpassbares System-Prompt.</div>
+        <span class="feat-tag">bot_ai.py</span>
+      </div>
+
+      <div class="feat-card">
+        <span class="feat-icon">💾</span>
+        <div class="feat-title">Brain (Supabase)</div>
+        <div class="feat-desc">Chats, Texte und Dateien dauerhaft speichern. Semantische Suche via Vektoren.</div>
+        <span class="feat-tag">brain.py · vectorbrain.py</span>
+      </div>
+
+      <div class="feat-card">
+        <span class="feat-icon">🎤</span>
+        <div class="feat-title">Voice Cloning &amp; TTS</div>
+        <div class="feat-desc">Whisper Transkription + Groq TTS. Voice-Klonung mit XTTS-V2. Live Voice Stream.</div>
+        <span class="feat-tag">voicecl.py</span>
+      </div>
+
+      <div class="feat-card">
+        <span class="feat-icon">🖼️</span>
+        <div class="feat-title">Bildgenerierung + Edit</div>
+        <div class="feat-desc">FLUX.1-schnell + Qwen Image Edit (DashScope). Llama-4 Vision Analyse.</div>
+        <span class="feat-tag">imgrem.py · imgedi.py</span>
+      </div>
+
+      <div class="feat-card">
+        <span class="feat-icon">🎵</span>
+        <div class="feat-title">Musikgenerierung</div>
+        <div class="feat-desc">Lyria 3, Suno v3.5 und MusicGen als Fallback-Kaskade.</div>
+        <span class="feat-tag">lyria_music.py · suno_music.py</span>
+      </div>
+
+      <div class="feat-card">
+        <span class="feat-icon">🎬</span>
+        <div class="feat-title">Video-Generierung</div>
+        <div class="feat-desc">Wan2.2 Text-to-Video und Image-to-Video über DashScope mit Async Polling.</div>
+        <span class="feat-tag">ttv26.py · textvideo.py</span>
+      </div>
+
+      <div class="feat-card">
+        <span class="feat-icon">💻</span>
+        <div class="feat-title">Claude Code Agent</div>
+        <div class="feat-desc">Claude 3.5 Sonnet für Code-Generierung und Bearbeitung mit strukturierter JSON-Antwort.</div>
+        <span class="feat-tag">claude_code.py</span>
+      </div>
+
+      <div class="feat-card">
+        <span class="feat-icon">🤖</span>
+        <div class="feat-title">Agentic Workflows</div>
+        <div class="feat-desc">Vollständiger Tool-Use-Agent mit Web-Suche, Brain-Zugriff und Content-Workflows.</div>
+        <span class="feat-tag">agent.py · superagent.py</span>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- QUICKSTART -->
+<section id="quickstart">
+  <div class="wrapper">
+    <p class="section-label">// Quickstart</p>
+    <h2>Deployment auf Google Cloud Run</h2>
+
+    <div class="code-wrap">
+      <div class="code-header">
+        <div class="code-dots"><div class="code-dot"></div><div class="code-dot"></div><div class="code-dot"></div></div>
+        <span class="code-lang">bash</span>
+      </div>
+      <pre><span class="cm"># 1. Repository auf GitHub hochladen</span>
+git add .
+git commit -m "Initial commit"
+git push origin main
+
+<span class="cm"># 2. In Google Cloud Console → Cloud Run → "Create Service"</span>
+<span class="cm">#    - Source Repository: dein GitHub Repo</span>
+<span class="cm">#    - Branch: main</span>
+<span class="cm">#    - Dockerfile: automatisch erkannt</span>
+
+<span class="cm"># 3. Wichtige Umgebungsvariablen setzen:</span>
+TELEGRAM_BOT_TOKEN=...
+GROQ_API_KEY=...
+SUPABASE_URL=...
+SUPABASE_KEY=...
+ANTHROPIC_API_KEY=...   # optional
+DASHSCOPE_API_KEY=...   # optional für Video
+GEMINI_API_KEY=...      # optional für Lyria
+
+<span class="cm"># 4. Deploy starten</span>
+<span class="cm"># Cloud Run erkennt das Dockerfile automatisch und deployed.</span></pre>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div style="margin-bottom:12px; font-size:1.5rem;">🤖</div>
+  <div><strong>telllmeeedrei</strong> – Telegram AI Bot</div>
+  <div style="margin-top:8px; color:#664499;">
+    Powered by Groq · Claude · FLUX.1 · Lyria · Suno · Dashscope · Supabase · Google Cloud Run
+  </div>
+</footer>
+
+</body>
+</html>
