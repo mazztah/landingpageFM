@@ -1,27 +1,36 @@
-# telllmeeedrei – Google Cloud Run Deployment
+# Filip Makarczyk Landing Page – Ready for Cloud Run
 
-## Schnellstart
+## Quick Deploy to Google Cloud Run
 
-1. **Repository auf GitHub hochladen**
-2. **In Google Cloud Console → Cloud Run → "Create Service"**
-   - Source: GitHub Repository
-   - Dockerfile wird automatisch erkannt
-3. **Wichtige Environment Variables setzen:**
-   - `TELEGRAM_BOT_TOKEN`
-   - `GROQ_API_KEY`
-   - `SUPABASE_URL`
-   - `SUPABASE_KEY`
-   - Optional: `ANTHROPIC_API_KEY`, `DASHSCOPE_API_KEY`, `GEMINI_API_KEY`
+### 1. Upload to GitHub
+```bash
+git init
+git add .
+git commit -m "Initial commit - Landing Page v3"
+git remote add origin https://github.com/YOUR_USERNAME/landingpageFM.git
+git push -u origin main
+```
 
-## Wichtige Änderungen für Cloud Run
+### 2. Deploy on Cloud Run
+1. Go to [Google Cloud Console → Cloud Run](https://console.cloud.google.com/run)
+2. Click **"Create Service"**
+3. Choose **"Continuously deploy new revisions from a source repository"**
+4. Connect your GitHub repo (`landingpageFM`)
+5. Select branch `main`
+6. Dockerfile will be detected automatically
 
-- Die schöne README wird jetzt automatisch unter `/` und `/readme` angezeigt.
-- Dockerfile ist optimiert für Cloud Run (User, `/tmp`, dynamischer Port).
+### 3. Important Environment Variables (optional)
+- No special variables needed for basic deployment.
 
-## Nach dem Deploy
+After deployment, your page will be available at:
+`https://your-service.run.app`
 
-- Deine Bot-URL: `https://dein-service.run.app`
-- README ansehen: `https://dein-service.run.app/readme`
-- Telegram Bot ist unter derselben URL erreichbar (Webhook oder Polling)
+The beautiful landing page is served at the root `/`.
 
-Viel Erfolg beim Deploy!
+## Local Testing
+```bash
+pip install -r requirements.txt
+uvicorn main:app --reload
+```
+
+Then open http://localhost:8000
