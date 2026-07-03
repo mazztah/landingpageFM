@@ -1,10 +1,4 @@
-# chat_ai.py – Groq-basierter KI-Chat für die Landingpage
-# Vorbild: bot_state.py / bot_ai.py aus dem telllmeeesechs-Projekt
-#   - Lazy Groq-Client (wird erst bei erster Nutzung initialisiert)
-#   - Modell-Fallback-Liste (falls ein Modell überlastet/nicht verfügbar ist)
-#   - Kurze In-Memory Chat-History pro Session, damit der Chat kontextbewusst bleibt
-# ═══════════════════════════════════════════════════════════════════════════════
-
+# chat_ai.py – Groq-basierter KI-Chat für die Landingpage (HARDENED v2)
 import os
 import asyncio
 import logging
@@ -15,23 +9,12 @@ import httpx
 
 logger = logging.getLogger(__name__)
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# Environment
-# ═══════════════════════════════════════════════════════════════════════════════
-
 GROQ_API_KEY = os.getenv("GROQ_API_KEY") or os.getenv("XAI_API_KEY")
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# Groq Client – LAZY (wie im Bot: erst instanziieren, wenn er wirklich gebraucht
-# wird, damit die App auch ohne gesetzten Key startet und sauber einen Fehler
-# zurückgibt statt beim Boot zu crashen)
-# ═══════════════════════════════════════════════════════════════════════════════
-
-_HTTP_TIMEOUT = httpx.Timeout(connect=10.0, read=20.0, write=10.0, pool=10.0)
+_HTTP_TIMEOUT = httpx.Timeout(connect=10.0, read=25.0, write=10.0, pool=10.0)
 _HTTP_LIMITS = httpx.Limits(max_connections=5, max_keepalive_connections=2)
 
 _groq_client_instance = None
-
 
 def get_groq_client():
     global _groq_client_instance
@@ -46,19 +29,11 @@ def get_groq_client():
         logger.info("✅ Groq Client initialisiert")
     return _groq_client_instance
 
-
 class _LazyGroqClient:
-    """Proxy-Objekt: verhält sich wie der echte Groq-Client, wird aber erst bei
-    der ersten Anfrage tatsächlich aufgebaut."""
     def __getattr__(self, name):
         return getattr(get_groq_client(), name)
 
-
 client = _LazyGroqClient()
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# Modell-Fallback-Liste (analog bot_ai.py::generate_response)
-# ═══════════════════════════════════════════════════════════════════════════════
 
 MODEL_LIST = [
     "llama-3.3-70b-versatile",
@@ -66,13 +41,11 @@ MODEL_LIST = [
     "meta-llama/llama-4-scout-17b-16e-instruct",
 ]
 
-MAX_CHAT_MESSAGES = 20  # inkl. System-Prompt
+MAX_CHAT_MESSAGES = 20
+_SESSION_TTL_SECONDS = 60 * 60 * 2
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# Wissensbasis über Filip Makarczyk – wird als System-Prompt injiziert, damit
-# der Chat auf der Landingpage fundierte Antworten zu CV, Skills und Projekten
-# geben kann, ohne zu halluzinieren.
-# ═══════════════════════════════════════════════════════════════════════════════
+chat_histories: dict[str, list] = defaultdict(list)
+_last_seen: dict[str, float] = {}
 
 SYSTEM_PROMPT = """Du bist der "KI-Experte" auf der persönlichen Landingpage von Filip Makarczyk.
 Du sprichst mit Besucher:innen der Seite (potenzielle Auftraggeber, Recruiter, Kolleg:innen) – professionell, freundlich, präzise und auf Deutsch, außer die Person schreibt auf Englisch, dann antwortest du auf Englisch.
@@ -138,16 +111,6 @@ Das gesamte System wurde entwickelt, deployt und wird gewartet für 0 € laufen
 Für ein unverbindliches Gespräch oder Pilotprojekt: Kontaktformular unten auf der Seite nutzen, oder direkt den Telegram-Bot @Alllweeeel6_bot ausprobieren.
 """
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# In-Memory Chat-History pro Session (kein persistenter Storage nötig für die
-# Landingpage – geht bei Neustart der App verloren, das ist hier ok).
-# ═══════════════════════════════════════════════════════════════════════════════
-
-chat_histories: dict[str, list] = defaultdict(list)
-_last_seen: dict[str, float] = {}
-_SESSION_TTL_SECONDS = 60 * 60 * 2  # 2h Inaktivität -> History wird verworfen
-
-
 def _ensure_history(session_id: str) -> list:
     now = time.time()
     last = _last_seen.get(session_id)
@@ -156,59 +119,55 @@ def _ensure_history(session_id: str) -> list:
     _last_seen[session_id] = now
     return chat_histories[session_id]
 
-
 async def generate_reply(session_id: str, message: str) -> str:
-    """Erzeugt eine Antwort über Groq, mit Modell-Fallback-Liste
-    (analog bot_ai.py::generate_response), inkl. kurzer Chat-History."""
-    history = _ensure_history(session_id)
-    history.append({"role": "user", "content": message})
-    if len(history) > MAX_CHAT_MESSAGES:
-        history[:] = [history[0]] + history[-(MAX_CHAT_MESSAGES - 1):]
+    """Sehr robuste Version mit oberstem Safety-Net."""
+    try:
+        history = _ensure_history(session_id)
+        history.append({"role": "user", "content": message})
+        if len(history) > MAX_CHAT_MESSAGES:
+            history[:] = [history[0]] + history[-(MAX_CHAT_MESSAGES - 1):]
 
-    if not GROQ_API_KEY:
-        reply = (
-            "Der KI-Chat ist aktuell nicht konfiguriert (fehlender GROQ_API_KEY). "
-            "Bitte nutzen Sie das Kontaktformular weiter unten."
-        )
+        if not GROQ_API_KEY:
+            reply = "Der KI-Chat ist aktuell nicht konfiguriert (fehlender GROQ_API_KEY). Bitte nutzen Sie das Kontaktformular weiter unten."
+            history.append({"role": "assistant", "content": reply})
+            return reply
+
+        for index, model_name in enumerate(MODEL_LIST):
+            try:
+                completion = await asyncio.to_thread(
+                    client.chat.completions.create,
+                    model=model_name,
+                    messages=history,
+                    temperature=0.6,
+                    max_tokens=700,
+                    top_p=0.9,
+                    stream=False,
+                )
+                msg = getattr(completion, "choices", [None])[0]
+                content = getattr(getattr(msg, "message", None), "content", "") if msg else ""
+                reply = (content or "").strip()
+                if not reply:
+                    reply = "Entschuldigung, dazu ist mir gerade nichts Sinnvolles eingefallen."
+                history.append({"role": "assistant", "content": reply})
+                return reply
+
+            except Exception as exc:
+                error_str = str(exc).lower()
+                logger.exception("Modell %s fehlgeschlagen → voller Traceback:", model_name)
+                if any(kw in error_str for kw in ["503", "over capacity", "429", "rate", "timeout", "connection", "unavailable"]):
+                    continue
+                if any(kw in error_str for kw in ["404", "model not found", "decommissioned", "not_found"]):
+                    continue
+                if any(kw in error_str for kw in ["401", "unauthorized", "invalid_api_key", "forbidden", "authentication", "permission", "key"]):
+                    reply = "Der KI-Chat hat ein Konfigurationsproblem mit dem API-Key. Bitte nutzen Sie das Kontaktformular weiter unten."
+                    history.append({"role": "assistant", "content": reply})
+                    return reply
+                break
+
+        reply = "🟠 Der KI-Chat ist gerade stark ausgelastet oder es gab ein technisches Problem. Bitte versuchen Sie es in 20–30 Sekunden erneut."
         history.append({"role": "assistant", "content": reply})
         return reply
 
-    for index, model_name in enumerate(MODEL_LIST):
-        try:
-            completion = await asyncio.to_thread(
-                client.chat.completions.create,
-                model=model_name,
-                messages=history,
-                temperature=0.6,
-                max_tokens=700,
-                top_p=0.9,
-                stream=False,
-            )
-            reply = (completion.choices[0].message.content or "").strip()
-            if not reply:
-                reply = "Entschuldigung, dazu ist mir gerade nichts Sinnvolles eingefallen. Können Sie die Frage anders formulieren?"
-            history.append({"role": "assistant", "content": reply})
-            if index > 0:
-                logger.info("✅ Fallback auf Modell %s verwendet", model_name)
-            return reply
-
-        except Exception as exc:
-            error_str = str(exc).lower()
-            logger.warning("Modell %s fehlgeschlagen: %s", model_name, exc)
-            # Transient / capacity errors -> try next model
-            if any(kw in error_str for kw in ["503", "over capacity", "429", "rate limit", "timeout", "connection", "unavailable"]):
-                continue
-            # Model not available -> try next
-            if any(kw in error_str for kw in ["404", "model not found", "decommissioned", "not_found"]):
-                continue
-            # Auth / key errors -> stop and give clear message (don't spam other models)
-            if any(kw in error_str for kw in ["401", "unauthorized", "invalid_api_key", "forbidden", "authentication", "permission", "key"]):
-                reply = "Der KI-Chat ist momentan nicht erreichbar (Konfigurationsproblem mit dem API-Key). Bitte nutzen Sie das Kontaktformular weiter unten."
-                history.append({"role": "assistant", "content": reply})
-                return reply
-            # Other unexpected errors -> stop loop
-            break
-
-    fallback_reply = "🟠 Der KI-Chat ist gerade stark ausgelastet oder es gab ein technisches Problem. Bitte versuchen Sie es in 20–30 Sekunden erneut oder nutzen Sie das Kontaktformular."
-    history.append({"role": "assistant", "content": fallback_reply})
-    return fallback_reply
+    except Exception as outer:
+        logger.exception("Schwerer unerwarteter Fehler in generate_reply:")
+        return "Entschuldigung, es gab ein technisches Problem. Bitte versuchen Sie es erneut oder nutzen Sie das Kontaktformular."
