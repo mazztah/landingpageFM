@@ -19,8 +19,8 @@ git push -u origin main
 5. Select branch `main`
 6. Dockerfile will be detected automatically
 
-### 3. Important Environment Variables (optional)
-- No special variables needed for basic deployment.
+### 3. Important Environment Variables
+- `GROQ_API_KEY` – **required** for the AI chat widget (`/api/chat`) to work. Get a free key at https://console.groq.com/keys and set it as an environment variable on Cloud Run (Service → Edit & Deploy New Revision → Variables & Secrets). Without it, the chat widget stays online but replies with a friendly "not configured" message instead of crashing.
 
 After deployment, your page will be available at:
 `https://your-service.run.app`
