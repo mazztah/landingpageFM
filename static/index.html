@@ -1629,11 +1629,21 @@
             messagesDiv.scrollTop = messagesDiv.scrollHeight;
 
             try {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 25000); // 25s timeout
+
                 const response = await fetch('/api/chat', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ message: message, session_id: chatSessionId })
+                    body: JSON.stringify({ message: message, session_id: chatSessionId }),
+                    signal: controller.signal
                 });
+                clearTimeout(timeoutId);
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+
                 const data = await response.json();
                 loadingDiv.remove();
 
@@ -1646,7 +1656,11 @@
                 loadingDiv.remove();
                 const errorDiv = document.createElement('div');
                 errorDiv.className = 'chat-message chat-bot text-red-400';
-                errorDiv.textContent = 'Fehler bei der Verbindung zum KI-Chat.';
+                if (error.name === 'AbortError') {
+                    errorDiv.textContent = 'Die Anfrage hat zu lange gedauert. Bitte versuchen Sie es erneut.';
+                } else {
+                    errorDiv.textContent = 'Fehler bei der Verbindung zum KI-Chat. Bitte versuchen Sie es später erneut.';
+                }
                 messagesDiv.appendChild(errorDiv);
             }
         }
