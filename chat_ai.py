@@ -61,9 +61,9 @@ client = _LazyGroqClient()
 # ═══════════════════════════════════════════════════════════════════════════════
 
 MODEL_LIST = [
-    "meta-llama/llama-4-scout-17b-16e-instruct",
     "llama-3.3-70b-versatile",
     "llama3-70b-8192",
+    "meta-llama/llama-4-scout-17b-16e-instruct",
 ]
 
 MAX_CHAT_MESSAGES = 20  # inkl. System-Prompt
@@ -195,12 +195,20 @@ async def generate_reply(session_id: str, message: str) -> str:
         except Exception as exc:
             error_str = str(exc).lower()
             logger.warning("Modell %s fehlgeschlagen: %s", model_name, exc)
-            if "503" in error_str or "over capacity" in error_str or "429" in error_str:
+            # Transient / capacity errors -> try next model
+            if any(kw in error_str for kw in ["503", "over capacity", "429", "rate limit", "timeout", "connection", "unavailable"]):
                 continue
-            if "404" in error_str or "model not found" in error_str or "decommissioned" in error_str:
+            # Model not available -> try next
+            if any(kw in error_str for kw in ["404", "model not found", "decommissioned", "not_found"]):
                 continue
+            # Auth / key errors -> stop and give clear message (don't spam other models)
+            if any(kw in error_str for kw in ["401", "unauthorized", "invalid_api_key", "forbidden", "authentication", "permission", "key"]):
+                reply = "Der KI-Chat ist momentan nicht erreichbar (Konfigurationsproblem mit dem API-Key). Bitte nutzen Sie das Kontaktformular weiter unten."
+                history.append({"role": "assistant", "content": reply})
+                return reply
+            # Other unexpected errors -> stop loop
             break
 
-    fallback_reply = "🟠 Der KI-Chat ist gerade stark ausgelastet. Bitte versuchen Sie es in 20–30 Sekunden erneut."
+    fallback_reply = "🟠 Der KI-Chat ist gerade stark ausgelastet oder es gab ein technisches Problem. Bitte versuchen Sie es in 20–30 Sekunden erneut oder nutzen Sie das Kontaktformular."
     history.append({"role": "assistant", "content": fallback_reply})
     return fallback_reply
