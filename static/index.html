@@ -1586,6 +1586,7 @@
         }
 
         let chatOpen = false;
+        const chatSessionId = (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : `sess-${Date.now()}-${Math.random().toString(36).slice(2)}`;
         function showChat() {
             document.getElementById('chat-popup').classList.remove('hidden');
             chatOpen = true;
@@ -1631,7 +1632,7 @@
                 const response = await fetch('/api/chat', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ message: message })
+                    body: JSON.stringify({ message: message, session_id: chatSessionId })
                 });
                 const data = await response.json();
                 loadingDiv.remove();
