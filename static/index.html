@@ -881,10 +881,16 @@
                 <div class="font-semibold text-lg mb-1">/spacewar</div>
                 <p class="text-sm text-slate-400">KI-gesteuertes Arcade-Spiel – Spielwiese für Echtzeit-Logik.</p>
             </div>
+
+            <div class="project-card glass rounded-3xl p-7 border border-white/10" onclick="openProject('immoticker')">
+                <div class="proj-icon w-12 h-12 rounded-2xl bg-indigo-600/20 flex items-center justify-center text-indigo-400 mb-4"><i class="fa-solid fa-building text-2xl"></i></div>
+                <div class="font-semibold text-lg mb-1">/immotracker</div>
+                <p class="text-sm text-slate-400">KI-Immo-Terminal – dediziertes Deployment, öffnet sich in neuem Tab.</p>
+            </div>
         </div>
 
         <p class="text-xs text-slate-500 mt-6">
-            Die meisten Module öffnen sich direkt live unter <strong class="text-slate-400">allweeelll-307619780865.europe-west3.run.app</strong>. /moost hat ein dediziertes Deployment; /jobs öffnet den vollständigen JobQueen Web-Workspace.
+            Die meisten Module öffnen sich direkt live unter <strong class="text-slate-400">telllmeeesevn.onrender.com</strong>. /moost hat ein dediziertes Deployment; /jobs öffnet den vollständigen JobQueen Web-Workspace.
         </p>
     </section>
 
@@ -1340,20 +1346,21 @@
 
         /* ===== PROJECT MODULE URLS ===== */
         const BOT_USERNAME = 'Alllweeeel6_bot';
-        const PROJECT_BASE_URL = 'https://allweeelll-307619780865.europe-west3.run.app';
+        const PROJECT_BASE_URL = 'https://telllmeeesevn.onrender.com';
         const TELEGRAM_BOT_URL = `https://t.me/${BOT_USERNAME}`;
         const PROJECT_URLS = {
             scanner:    { url: `${PROJECT_BASE_URL}/scanner`,    label: '/scanner',    desc: 'Dokumenten- & Objekt-Scanner mit automatischer Datenextraktion.' },
             chess:      { url: `${PROJECT_BASE_URL}/chess`,      label: '/chess',       desc: 'KI-Schachpartner – Spielwiese für Agenten-Logik & Strategie.' },
             jobs:       { url: `${PROJECT_BASE_URL}/starter`,    label: '/jobs',         desc: 'JobQueen – KI-Jobsuche über 20+ Plattformen, CV-Analyse, Anschreiben & Export (Web-UI).' },
-            moost:      { url: 'https://mooost-307619780865.europe-west1.run.app', label: '/moost',        desc: 'Generative Media & Musik-Modul der Multi-Modal-Pipeline.' },
+            moost:      { url: 'https://mooost.onrender.com', label: '/moost',        desc: 'Generative Media & Musik-Modul der Multi-Modal-Pipeline.' },
             sandbox:    { url: `${PROJECT_BASE_URL}/sandbox`,    label: '/sandbox',      desc: "Queen's Code Sandbox V8 – Code direkt im Bot ausführen." },
             superskill: { url: `${PROJECT_BASE_URL}/superskill`, label: '/superskill',   desc: 'Skill-Orchestrierung – kombiniert mehrere Module zu einem Workflow.' },
             plantid:    { url: `${PROJECT_BASE_URL}/plantid`,    label: '/plantid',      desc: 'Computer-Vision-Demo am Beispiel Pflanzenbestimmung.' },
             readme:     { url: TELEGRAM_BOT_URL,                 label: '/readme',       desc: 'Übersicht aller Module, Befehle und der Architektur des Bots. (Im Bot mit /readme aufrufen)' },
             archive:    { url: `${PROJECT_BASE_URL}/archive`,    label: '/archive',      desc: 'Recherche- & Download-Workspace mit LLM-Unterstützung (Archive.org).' },
             dragon:     { url: `${PROJECT_BASE_URL}/dragon`,     label: '/dragon',       desc: 'Experimentelles Agenten- & Simulationsmodul.' },
-            spacewar:   { url: `${PROJECT_BASE_URL}/spacewar`,   label: '/spacewar',     desc: 'Kleines KI-gesteuertes Arcade-Spiel – Spielwiese für Echtzeit-Logik.' }
+            spacewar:   { url: `${PROJECT_BASE_URL}/spacewar`,   label: '/spacewar',     desc: 'Kleines KI-gesteuertes Arcade-Spiel – Spielwiese für Echtzeit-Logik.' },
+            immoticker: { url: 'https://immoticker.onrender.com', label: '/immotracker', desc: 'KI-Immo-Terminal – automatisiertes Tracking & Analyse von Immobilienangeboten.' }
         };
 
         function openProject(key) {
