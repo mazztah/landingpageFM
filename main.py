@@ -50,7 +50,7 @@ async def chat(payload: ChatRequest, request: Request):
     if len(message) > 2000:
         message = message[:2000]
 
-    # Session-ID vom Client übernehmen, sonst als grobe Notlösung die Client-IP
+    # Session-ID vom Client übernehmen, sonst als grobe ya Notlösung die Client-IP
     # nutzen, damit zumindest kurzer Kontext über mehrere Nachrichten erhalten
     # bleibt (Frontend generiert aktuell keine eigene Session-ID).
     session_id = payload.session_id or (request.client.host if request.client else str(uuid.uuid4()))
