@@ -2,7 +2,10 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#0f172a">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="format-detection" content="telephone=no">
     <title>Filip Makarczyk • Hybrid-Experte für KI-gestütztes Property Management</title>
     <meta name="description" content="13+ Jahre Property Management + selbst gebaute KI-Systeme mit 25+ Modulen. Der Experte, der Prozesse in der Immobilienwirtschaft wirklich versteht und selbst automatisieren kann. Für Decision Maker in Asset &amp; Property Management.">
     <script src="https://cdn.tailwindcss.com"></script>
@@ -86,6 +89,8 @@
         .project-card:hover { transform: translateY(-6px); box-shadow: 0 20px 30px -10px rgba(124,58,237,.25); border-color: rgba(124,58,237,.5); }
         .project-card .proj-icon { transition: transform .4s cubic-bezier(.34,1.56,.64,1); }
         .project-card:hover .proj-icon { transform: scale(1.12) rotate(-4deg); }
+        .featured-project-card { border: 1px solid rgba(124,58,237,.55); background: linear-gradient(155deg, rgba(124,58,237,.14), rgba(15,23,42,.5)); box-shadow: 0 0 0 1px rgba(124,58,237,.15), 0 20px 40px -18px rgba(124,58,237,.4); }
+        .featured-project-card:hover { border-color: rgba(124,58,237,.9); box-shadow: 0 0 0 1px rgba(124,58,237,.35), 0 24px 45px -16px rgba(124,58,237,.55); }
 
         /* ===== ROI CALCULATOR ===== */
         .roi-slider { -webkit-appearance: none; appearance: none; height: 6px; border-radius: 999px; background: linear-gradient(90deg,#7C3AED,#3B82F6); outline: none; }
@@ -121,6 +126,56 @@
         .quote-number { font-family: 'Space Grotesk', sans-serif; font-weight: 600; background: linear-gradient(135deg,#a78bfa,#60a5fa); -webkit-background-clip: text; background-clip: text; color: transparent; }
         @keyframes quoteFloat { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
         .quote-icon-float { animation: quoteFloat 4.5s ease-in-out infinite; }
+
+        /* ===== MOBILE / ANDROID OPTIMIERUNG ===== */
+        html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+        html, body { max-width: 100%; overflow-x: hidden; }
+        a, button, [onclick] { -webkit-tap-highlight-color: transparent; }
+        img, svg, video, iframe { max-width: 100%; }
+
+        @media (max-width: 767px) {
+            /* Container-Innenabstand verkleinern, damit mehr Platz für Inhalte bleibt */
+            .px-8 { padding-left: 1.25rem !important; padding-right: 1.25rem !important; }
+
+            /* Überdimensionierte Headline-Größen für schmale Android-Displays herunterskalieren */
+            .section-header { font-size: 2.1rem !important; line-height: 1.18 !important; }
+            h1.section-header, h1 .section-header { font-size: 2.5rem !important; line-height: 1.12 !important; }
+            .text-8xl { font-size: 2.75rem !important; line-height: 1.08 !important; }
+            .text-7xl { font-size: 2.5rem !important; line-height: 1.1 !important; }
+            .text-6xl { font-size: 2.1rem !important; line-height: 1.18 !important; }
+            .text-5xl { font-size: 1.85rem !important; line-height: 1.2 !important; }
+            .text-2xl { font-size: 1.25rem !important; line-height: 1.5 !important; }
+
+            /* Buttons in der Hero-/CTA-Zeile: volle Breite statt Nebeneinander-Quetschung */
+            .hero-anim-4.flex-wrap > a, .hero-anim-4.flex-wrap > button { flex: 1 1 100%; }
+
+            /* Stat-Reihe im Hero darf umbrechen, statt horizontal zu überlaufen */
+            .hero-anim-5 { flex-wrap: wrap; row-gap: 1.25rem; column-gap: 1.5rem !important; }
+
+            /* Vergleichstabelle: von 3 Spalten auf gestapelte Karten pro Zeile */
+            .compare-row.grid-cols-3 { grid-template-columns: 1fr !important; }
+            .compare-row > div { padding: .6rem 1.1rem !important; }
+            .compare-row > div:first-child { padding-top: 1.1rem !important; font-weight: 700; color: #cbd5e1; }
+            .compare-row > div:last-child { padding-bottom: 1.1rem !important; }
+
+            /* Featured Project Card (bkabr): auf schmalen Screens Icon + Text sauber untereinander */
+            .featured-project-card .flex.items-start { flex-direction: column; }
+            .featured-project-card .proj-icon { margin-bottom: .5rem; }
+
+            /* Workspace-Banner darf nicht breiter als der Viewport werden */
+            #workspace-banner { max-width: calc(100vw - 2rem); flex-wrap: wrap; justify-content: center; text-align: center; }
+
+            /* Etwas kleinere Sektionsabstände, damit beim Scrollen auf dem Handy weniger Leerraum entsteht */
+            section.py-20 { padding-top: 3.5rem !important; padding-bottom: 3.5rem !important; }
+        }
+
+        @media (max-width: 420px) {
+            /* Sehr schmale Android-Geräte (z. B. 360–390px) noch etwas kompakter */
+            .section-header { font-size: 1.85rem !important; }
+            h1.section-header, h1 .section-header { font-size: 2.15rem !important; }
+            .text-8xl { font-size: 2.35rem !important; }
+            .text-7xl { font-size: 2.15rem !important; }
+        }
     </style>
 </head>
 <body class="bg-slate-950 text-slate-200 dark">
@@ -808,7 +863,7 @@
     <!-- PROJEKTE / BOT-MODULE -->
     <section id="projekte" class="max-w-screen-2xl mx-auto px-8 py-20 bg-slate-900 border-y border-white/10">
         <div class="reveal max-w-4xl mb-12">
-            <div class="text-violet-400 text-xs tracking-[3px] font-semibold mb-3">LIVE-PROJEKTE DES @ALLLWEEEEL6_BOT-ÖKOSYSTEMS</div>
+            <div class="text-violet-400 text-xs tracking-[3px] font-semibold mb-3">LIVE-PROJEKTE DES @TELLLMEEEEIGHT_BOT-ÖKOSYSTEMS</div>
             <h2 class="section-header text-6xl tracking-tighter">Projekte zum Ausprobieren</h2>
             <p class="mt-5 text-xl text-slate-300">
                 Jedes Modul ist ein eigenständiges, produktiv laufendes Projekt – erreichbar direkt im Browser oder über den Telegram-Bot. Klick auf eine Kachel, um sie direkt zu öffnen.
@@ -816,6 +871,17 @@
         </div>
 
         <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div class="project-card featured-project-card glass rounded-3xl p-7 sm:col-span-2 relative overflow-hidden" onclick="openProject('bkabr')">
+                <div class="absolute top-0 right-0 px-4 py-1.5 rounded-bl-2xl bg-gradient-to-r from-violet-600 to-blue-600 text-white text-xs font-bold tracking-wider">NEU</div>
+                <div class="flex items-start gap-5">
+                    <div class="proj-icon w-14 h-14 rounded-2xl bg-gradient-to-br from-violet-600/30 to-blue-600/30 flex items-center justify-center text-violet-300 mb-4 flex-shrink-0"><i class="fa-solid fa-star text-2xl"></i></div>
+                    <div>
+                        <div class="font-semibold text-xl mb-1">bkabr</div>
+                        <p class="text-sm text-slate-300">Dediziertes Deployment – eigenständige App, direkt im Browser erreichbar. Empfohlener Einstiegspunkt zum Ausprobieren.</p>
+                    </div>
+                </div>
+            </div>
+
             <div class="project-card glass rounded-3xl p-7 border border-white/10" onclick="openProject('scanner')">
                 <div class="proj-icon w-12 h-12 rounded-2xl bg-violet-600/20 flex items-center justify-center text-violet-400 mb-4"><i class="fa-solid fa-qrcode text-2xl"></i></div>
                 <div class="font-semibold text-lg mb-1">/scanner</div>
@@ -890,7 +956,7 @@
         </div>
 
         <p class="text-xs text-slate-500 mt-6">
-            Die meisten Module öffnen sich direkt live unter <strong class="text-slate-400">telllmeeeeight.fly.dev</strong>. /moost hat ein dediziertes Deployment; /jobs öffnet den vollständigen JobQueen Web-Workspace.
+            Die meisten Module öffnen sich direkt live unter <strong class="text-slate-400">telllmeeeeight.fly.dev</strong>. bkabr, /moost und /immotracker haben eigene dedizierte Deployments; /jobs öffnet den vollständigen JobQueen Web-Workspace.
         </p>
     </section>
 
@@ -1024,12 +1090,12 @@
                 </div>
                 <h2 class="section-header text-6xl tracking-tighter mb-6">Nicht nur lesen – selbst ausprobieren</h2>
                 <p class="text-xl text-slate-300 mb-8 leading-relaxed">
-                    Alles oben Beschriebene läuft nicht in einer Demo-Umgebung, sondern produktiv im Telegram-Bot <strong class="text-white">@Alllweeeel6_bot</strong>. Einfach QR-Code scannen oder Button klicken – kein Account, keine Installation, keine Wartezeit.
+                    Alles oben Beschriebene läuft nicht in einer Demo-Umgebung, sondern produktiv im Telegram-Bot <strong class="text-white">@TELLLMEEEEIGHT_BOT</strong>. Einfach QR-Code scannen oder Button klicken – kein Account, keine Installation, keine Wartezeit.
                 </p>
                 <div class="flex flex-wrap gap-4">
-                    <a href="https://t.me/Alllweeeel6_bot" target="_blank" rel="noopener" class="magnetic-btn inline-flex items-center gap-x-3 px-8 h-14 rounded-3xl bg-[#229ED9] text-white font-semibold hover:bg-[#1e8bc3] transition-all">
+                    <a href="https://t.me/TELLLMEEEEIGHT_BOT" target="_blank" rel="noopener" class="magnetic-btn inline-flex items-center gap-x-3 px-8 h-14 rounded-3xl bg-[#229ED9] text-white font-semibold hover:bg-[#1e8bc3] transition-all">
                         <i class="fa-brands fa-telegram text-xl"></i>
-                        <span>@Alllweeeel6_bot öffnen</span>
+                        <span>@TELLLMEEEEIGHT_BOT öffnen</span>
                     </a>
                     <button onclick="openProject('readme')" class="magnetic-btn inline-flex items-center gap-x-3 px-8 h-14 rounded-3xl border border-white/20 hover:bg-white/5 font-medium transition-all">
                         <i class="fa-solid fa-book"></i>
@@ -1041,7 +1107,7 @@
             <div class="reveal-right flex justify-center">
                 <div class="glass rounded-3xl p-8 border border-white/10 text-center">
                     <div id="bot-qr" class="bg-white rounded-2xl p-4 inline-flex items-center justify-center"></div>
-                    <div class="font-display text-xl mt-5">@Alllweeeel6_bot</div>
+                    <div class="font-display text-xl mt-5">@TELLLMEEEEIGHT_BOT</div>
                     <div class="text-xs text-slate-400 mt-1 tracking-wide">QR-Code scannen &amp; direkt loslegen</div>
                 </div>
             </div>
@@ -1062,7 +1128,7 @@
             <div class="compare-row grid grid-cols-3 text-sm font-semibold border-b border-white/10">
                 <div class="p-5 text-slate-400">Funktion</div>
                 <div class="p-5 text-slate-400">Typische SaaS-Konkurrenz</div>
-                <div class="p-5 compare-highlight text-emerald-400">telllmeeeeight (@Alllweeeel6_bot)</div>
+                <div class="p-5 compare-highlight text-emerald-400">telllmeeeeight (@TELLLMEEEEIGHT_BOT)</div>
             </div>
             <div class="compare-row grid grid-cols-3 text-sm border-b border-white/5">
                 <div class="p-5 text-slate-300">Monatliche Kosten</div>
@@ -1345,10 +1411,11 @@
         }
 
         /* ===== PROJECT MODULE URLS ===== */
-        const BOT_USERNAME = 'Alllweeeel6_bot';
+        const BOT_USERNAME = 'TELLLMEEEEIGHT_BOT';
         const PROJECT_BASE_URL = 'https://telllmeeeeight.fly.dev';
         const TELEGRAM_BOT_URL = `https://t.me/${BOT_USERNAME}`;
         const PROJECT_URLS = {
+            bkabr:      { url: 'https://bkabr.fly.dev', label: 'bkabr', desc: 'Dediziertes Deployment – eigenständige App, direkt im Browser erreichbar.' },
             scanner:    { url: `${PROJECT_BASE_URL}/scanner`,    label: '/scanner',    desc: 'Dokumenten- & Objekt-Scanner mit automatischer Datenextraktion.' },
             chess:      { url: `${PROJECT_BASE_URL}/chess`,      label: '/chess',       desc: 'KI-Schachpartner – Spielwiese für Agenten-Logik & Strategie.' },
             jobs:       { url: `${PROJECT_BASE_URL}/starter`,    label: '/jobs',         desc: 'JobQueen – KI-Jobsuche über 20+ Plattformen, CV-Analyse, Anschreiben & Export (Web-UI).' },
